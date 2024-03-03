@@ -46,55 +46,50 @@ Shader "Custom/ColorTerrainShader"
             float height = (tex2D(_MainTex, IN.uv_MainTex).r + tex2D(_MainTex, IN.uv_MainTex).g +
             tex2D(_MainTex, IN.uv_MainTex).b)/3;
 
-            float3 color1; float3 color2; float3 colorResult; float t;
+            float3 color1; float3 color2; float3 colorResult; float t; float H1; float H2;
 
-            color1 = float3(0.0, 0.0, 0.0);
-            t=1;
+           
+           
             if (height <= _WaterLevel) // синий
             {
-                // color2 = float3(0.0, 0.0, 1.0); // blue
+                color1 = _WaterColor;
                 color2 = _WaterColor;
-               
-               //t=height;
+                H1 =0; H2 = _WaterLevel;
+              
             }
             else if (height <= _SandLevel) // желтый
             {
                  color1 =_WaterColor; // blue
                 color2 = _SandColor; // yellow
-               //  t = height/(_SandLevel -_WaterLevel);
-                
-
+                H1 = _WaterLevel; H2 = _SandLevel;
             }
             else if (height <= _GrassLevel) // зеленый
             {
-                // color1 = _SandColor;
-                color2 = _GrassColor; // green
-                 t = height/(_GrassLevel -_SandLevel);
+                 color1 = _SandColor;
+                color2 = _GrassColor; // green                
+                H1 = _SandLevel; H2 = _GrassLevel;
             }
             else if (height <= _RockLevel) // коричневый
             {
-               // color1 = _GrassColor; // green
+               color1 = _GrassColor; // green
                color2 = _RockColor; // brown
-               t = height/(_RockLevel-_GrassLevel);
+               H1 = _GrassLevel; H2 = _RockLevel;
             }
-            else // белый
+            else if(height <= 1)
             {
-                // color1 = _RockColor;
+                color1 = _RockColor;
                 color2 = _SnowColor; // white
-                t =1- height;
+               H1 = _RockLevel; H2 =1;
             }
-             //t=height;
-            float stepR = (color2.x - color1.x) / t;
-            
-            float stepG = (color2.y - color1.y) / t;
-            float stepB = (color2.z - color1.z) / t;
+            // color1 = float3(0.0, 0.0, 0.0);
+            float deltaH = H2 - H1;
+            float step = deltaH/_Gradient;
+            colorResult = color2-color1;
+             t= _Gradient* (height-H1)/step;
+            float3 stepColor =t* colorResult/_Gradient;
+            colorResult = color1 + stepColor;
+             
 
-            // if(stepR <0) stepR =0;
-            // if(stepR <0) stepG =0;
-            // if(stepR <0) stepB =0;
-
-            colorResult = float3(stepR,stepG,stepB);
-            
             o.Albedo = colorResult;
         }
 
